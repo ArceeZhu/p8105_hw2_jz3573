@@ -1,7 +1,7 @@
 ---
 title: "p8105_hw2_jz3573"
 output:
- github_document 
+ github_document: 
 date: "2023-10-03"
 ---
 
@@ -9,8 +9,8 @@ date: "2023-10-03"
 ## Load library 
 ```{r setup}
 library(tidyverse)
-library(readxl)
 library(tidyr)
+library(dplyr)
 ```
 
 
@@ -70,10 +70,46 @@ The total weight of trash collected by Professor Trash Wheel is `r subset(joint,
 
 The dataset describe the detail of drumpsters, which include the drumpsters' number, the weight of trash and the type of trash. 
 
-The total number of cigarette butts collected by Gwynnda in July of 2021 is `r `subset(joint, trash_wheel=="Gwynnda" &  month=="July" & year=="2021") %>% pull (cigarette_butts) %>% sum()`
+The total number of cigarette butts collected by Gwynnda in July of 2021 is `r subset(joint, trash_wheel=="Gwynnda" &  month=="July" & year=="2021") %>% pull (cigarette_butts) %>% sum()`
 
 
 
 # Question 3
 
+## Tidy baseline df
+```{r tidy baseline df }
+baseline=
+  read.csv("./data/data_mci/MCI_baseline.csv", skip = 1) %>% 
+  janitor::clean_names() %>% 
+  mutate(
+      sex =case_match(sex,
+                      0 ~ "female",
+                      1 ~ "male"),
+      apoe4=case_match(apoe4,
+                      1 ~ "carrier",
+                      0 ~ "non-carrier")) %>% 
+     filter( age_at_onset=="." | age_at_onset>  current_age)
+
+```
+
+Above codes ensure that sex and APOE4 carrier status are appropriate encoded and every participant meet the stated inclusion criteria (i.e. no MCI at baseline).
+
+## Description of the baseline df
+
+How many participants were recruited: `r nrow(baseline)`
+How many participants develop MCI?  `r filter(baseline, age_at_onset! = "." %>% nrow ())`
+What is the average baseline age?  `r pull(baseline, current_age) %>%  mean()`
+What proportion of women in the study are APOE4 carriers? 
+`r scales::percent(nrow(filter(baseline, sex == "female" & apoe4 =="carrier")) / nrow(filter(baseline, sex == "female")))`
+
+## Tidy up the longitudinal data:
+```{r amyloid}
+amyloid=
+  read.csv("./data/data_mci/mci_amyloid.csv", skip = 1) %>% 
+  janitor::clean_names() %>% 
+  pivot_longer(
+    cols=baseline:time_8, 
+    names_to = "time", 
+    values_to = "amyloid_ratio")
+```
 
