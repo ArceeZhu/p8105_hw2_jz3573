@@ -1,0 +1,79 @@
+---
+title: "p8105_hw2_jz3573"
+output:
+ github_document 
+date: "2023-10-03"
+---
+
+
+## Load library 
+```{r setup}
+library(tidyverse)
+library(readxl)
+library(tidyr)
+```
+
+
+# Quesioin 2
+
+## tidy up Mr.Trash Wheel
+```{r tidy up Mr.Trash Wheel}
+Mr=
+  read_excel("./data/Trash.xlsx", 1,range="A2:N586") %>% 
+  janitor::clean_names() %>% 
+  rename(dumpster_number=dumpster) %>% 
+  drop_na(dumpster_number) %>% 
+  mutate(homes_powered = weight_tons *500/30,
+         trash_wheel="Mr")
+ 
+skimr::skim(Mr)
+```
+## Tidy up Professor Trash Wheel
+```{r tidy up Professor Trash Wheel}
+Pro=
+  read_excel("./data/Trash.xlsx", 2,range="A2:M108") %>% 
+  janitor::clean_names() %>% 
+  rename(dumpster_number=dumpster) %>% 
+  drop_na(dumpster_number) %>% 
+  mutate(homes_powered = weight_tons *500/30,
+         trash_wheel="Professor")
+```
+
+## Tidy up Gwynnda
+```{r tidy up Gwynnda Trash Wheel}
+Gwy=
+  read_excel("./data/Trash.xlsx", 3 ,range="A2:L157") %>% 
+  janitor::clean_names() %>% 
+  rename(dumpster_number=dumpster) %>% 
+  drop_na(dumpster_number) %>% 
+  mutate(homes_powered= weight_tons *500/30,
+          trash_wheel="Gwynnda") 
+  
+
+ skimr::skim(Gwy)
+
+```
+## Join the three datasets
+```{r join datasets}
+joint=
+     full_join(Gwy, Pro) |>
+     full_join(x = _, y = Mr)
+ 
+  
+```
+
+## Descriptiion of the dataset:
+ 
+The dataset contains `r nrow(joint)` observations and `r ncol(joint)` variables.
+
+The total weight of trash collected by Professor Trash Wheel is `r subset(joint, trash_wheel == "Professor") |> pull(weight_tons) |> sum()`
+
+The dataset describe the detail of drumpsters, which include the drumpsters' number, the weight of trash and the type of trash. 
+
+The total number of cigarette butts collected by Gwynnda in July of 2021 is `r `subset(joint, trash_wheel=="Gwynnda" &  month=="July" & year=="2021") %>% pull (cigarette_butts) %>% sum()`
+
+
+
+# Question 3
+
+
